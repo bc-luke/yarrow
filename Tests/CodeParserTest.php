@@ -23,8 +23,7 @@ class CodeParserTest extends PHPUnit_Framework_TestCase {
 		$reader->expects($this->once())
 									->method('onFunction')
 									->with('sample_function',
-											array('$arg'=>null, // refactor to add default arg values
-											));
+											array(new ArgumentModel('$arg')));
 
 		$parser = new CodeParser($tokens, $reader);
 		$parser->parse();
@@ -51,17 +50,17 @@ class CodeParserTest extends PHPUnit_Framework_TestCase {
 		$reader->expects($this->at(0))->method('onClass')->with('SampleOne');
 		$reader->expects($this->at(1))->method('onMethod')->with('hasCCNZero');
 		$reader->expects($this->at(2))->method('onMethodEnd');
-		$reader->expects($this->at(3))->method('onMethod')->with('hasCCNOne', array('$in'=>null));
+		$reader->expects($this->at(3))->method('onMethod')->with('hasCCNOne', array(new ArgumentModel('$in')));
 		$reader->expects($this->at(4))->method('onMethodEnd');
-		$reader->expects($this->at(5))->method('onMethod')->with('hasCCNTwo', array('$in'=>null));
+		$reader->expects($this->at(5))->method('onMethod')->with('hasCCNTwo', array(new ArgumentModel('$in')));
 		$reader->expects($this->at(6))->method('onMethodEnd');
 		$reader->expects($this->at(7))->method('onClassEnd');
 		$reader->expects($this->at(8))->method('onClass')->with('SampleTwo');
-		$reader->expects($this->at(9))->method('onMethod')->with('hasCCNFive', array('$in'=>null, '$out'=>null));
+		$reader->expects($this->at(9))->method('onMethod')->with('hasCCNFive', array(new ArgumentModel('$in'), new ArgumentModel('$out')));
 		$reader->expects($this->at(10))->method('onMethodEnd');
 		$reader->expects($this->at(11))->method('onClassEnd');
 		$reader->expects($this->at(12))->method('onClass')->with('SampleThree');
-		$reader->expects($this->at(13))->method('onMethod')->with('hasCCNTen', array('$in'=>null, '$out'=>null));
+		$reader->expects($this->at(13))->method('onMethod')->with('hasCCNTen', array(new ArgumentModel('$in'), new ArgumentModel('$out')));
 		$reader->expects($this->at(14))->method('onMethodEnd');
 		$reader->expects($this->at(15))->method('onClassEnd');
 
@@ -76,7 +75,7 @@ class CodeParserTest extends PHPUnit_Framework_TestCase {
 		$reader = $this->getMockReader($file);
 		
 		$reader->expects($this->at(1))->method('onMethod')->with('hasReferenceSymbol');
-		$reader->expects($this->at(3))->method('onMethod')->with('annoyingWhitespace', array('$argument'=>null));
+		$reader->expects($this->at(3))->method('onMethod')->with('annoyingWhitespace', array(new ArgumentModel('$argument')));
 
 		$parser = new CodeParser($tokens, $reader);
 		$parser->parse();
@@ -148,7 +147,7 @@ class CodeParserTest extends PHPUnit_Framework_TestCase {
 									  ->with('FinalStatic', ClassModel::BASE_TYPE, array('final' => true));
 
 		$reader->expects($this->at(1))->method('onMethod')
-									  ->with('hello', array('$a'=> ''), array('static' => true, 'visibility' => 'public'));
+									  ->with('hello', array(new ArgumentModel('$a', null, 'world')), array('static' => true, 'visibility' => 'public'));
 
 
 		$parser = new CodeParser($tokens, $reader);
@@ -234,8 +233,8 @@ class CodeParserTest extends PHPUnit_Framework_TestCase {
 		$tokens = $this->tokenizeSampleFile($file);
 		$reader = $this->getMockReader($file);
 		
-		$reader->expects($this->once())->method('onFunction')->with('multiplier', array('$arg'=>false));
-		$reader->expects($this->once())->method('onMethod')->with('getMultiplier', array('$arg'=>false));
+		$reader->expects($this->once())->method('onFunction')->with('multiplier', array(new ArgumentModel('$arg')));
+		$reader->expects($this->once())->method('onMethod')->with('getMultiplier', array(new ArgumentModel('$arg')));
 		
 		$parser = new CodeParser($tokens, $reader);
 		$parser->parse();

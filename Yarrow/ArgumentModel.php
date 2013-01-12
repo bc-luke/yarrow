@@ -64,8 +64,7 @@ class ArgumentModel extends CodeModel {
 			$e = '';
 			if (is_array($default)) {
 				$default = var_export($default, true);
-				$default = str_replace(",\n", "", $default);
-				$default = str_replace("\n", "", $default);
+				$default = preg_replace('/,?\v/', '', $default);
 				$default = preg_replace('/array\s*\(\s*/', 'array(', $default);
 				$default = preg_replace('/\s+array/', ' array', $default);
 				$default = preg_replace('/\s+\)/', ')', $default);
