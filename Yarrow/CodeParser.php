@@ -412,7 +412,7 @@ class CodeParser {
 			$this->current++;
 		}
 
-		$arguments = $this->shredArguments2($this->current+1);
+		$arguments = $this->shredArguments($this->current+1);
 
 		if ($this->state == self::CLASS_SCOPE) {
 			$this->reader->onMethod($name, $arguments, $this->keywords);
@@ -469,31 +469,8 @@ class CodeParser {
 		$this->keywords = array();
 		$this->default = false;
 	}
-
-	/**
-	 * Collects the parameter signature of a function from a given position in
-	 * the token stream.
-	 */
-	function shredArguments($position) {
-		$token = $this->currentToken();
-		$arguments = array();
-		$hint = false;
-		
-		while ($token[0] != T_BRACE_CLOSE) {
-			if ($token[0] == T_STRING) {
-				$hint = $token[1];
-			} elseif ($token[0] == T_VARIABLE) {
-				$name = (string)$token[1];
-				$arguments[$name] = $hint;
-				$hint = false;
-			}
-			$token = $this->nextToken();
-		}
-
-		return $arguments;
-	}
 	
-	function shredArguments2() {
+	function shredArguments() {
 		
 		$arguments = array();
 		$token = $this->currentToken();

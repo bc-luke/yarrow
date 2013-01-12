@@ -22,7 +22,7 @@ class ArgumentModel extends CodeModel {
 	private $default;
 	private $isReference;
 	
-	function __construct($name, $hint = null, $default = null, $isReference = false, $a = array(array())) {
+	function __construct($name, $hint = null, $default = null, $isReference = false, $a = array(array(1))) {
 		$this->name = $name;
 		$this->hint = $hint;
 		$this->default = $default;
@@ -53,12 +53,27 @@ class ArgumentModel extends CodeModel {
 		return !is_null($this->default);
 	}
 
-	public function toDelcaration() {
+	public function getDeclaration() {
 		$declaration = $this->hasHint() ? $this->getHint() . ' ' : '';
 		$declaration .= $this->isReference() ? '&' : '';
 		$declaration .= $this->getName();
-		$declaration .= $this->hasDefault() ? ' = ' . $this->getDefault(): '';
+
+		if ($this->hasDefault()) {
+			$declaration .= ' = ';
+			$default = $this->getDefault();
+			$e = '';
+			if (is_array($default)) {
+				$default = var_export($default, true);
+				$default = str_replace(",\n", "", $default);
+				$default = str_replace("\n", "", $default);
+				$default = preg_replace('/array\s*\(\s*/', 'array(', $default);
+				$default = preg_replace('/\s+array/', ' array', $default);
+				$default = preg_replace('/\s+\)/', ')', $default);
+			}
+			$declaration .= $default;
+		}
 		
+		return $declaration;
 	}
 	
 }

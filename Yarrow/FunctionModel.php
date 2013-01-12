@@ -70,13 +70,13 @@ class FunctionModel extends CodeModel {
 		if ($this->isStatic()) $signature .= 'static ';
 		$signature .= 'function ' . $this->getName();
 		
-		$arguments = '';
+		$arguments = array();
 		foreach ($this->getArguments() as $argument) {
-			$arguments .= (string)$argument;
+			$arguments[] = $argument->getDeclaration();
 		}
 		
-		$arguments = ($this->getArguments()) ? implode(', ', array_keys($this->getArguments())) : '';
-		$signature .= '(' . $arguments . ')';
+		$argumentList = ($this->getArguments()) ? implode(', ', $arguments) : '';
+		$signature .= '(' . $argumentList . ')';
 		return $signature;
 	}
 }
