@@ -19,6 +19,7 @@ define('T_TERNARY_IF', 977);
 define('T_AMPERSAND', 988);
 define('T_SEMICOLON', 990);
 define('T_COMMA', 991);
+define('T_EQUAL', 992);
 define('T_UNKNOWN', 999);
 
 /**
@@ -43,6 +44,7 @@ class CodeParser {
 		'&' => T_AMPERSAND,
 		';' => T_SEMICOLON,
 		',' => T_COMMA,
+		'=' => T_EQUAL,
 	);
 
 	const GLOBAL_SCOPE 	 = 1;
@@ -246,10 +248,10 @@ class CodeParser {
 	/**
 	 * Clip the default value off a class property or function argument.
 	 */
-	function shredValue($endToken=T_SEMICOLON) {		
+	function shredValue($endTokens=array(T_SEMICOLON)) {		
 		$token = $this->nextToken();
 		
-		while ($token[0] != $endToken) {
+		while (!in_array($token[0], $endTokens)) {
 			
 			switch($token[0]) {
 
@@ -274,6 +276,7 @@ class CodeParser {
 			
 			$token = $this->nextToken();
 		}
+		return $this->default;
 	}
 	
 	/**
@@ -409,7 +412,7 @@ class CodeParser {
 			$this->current++;
 		}
 
-		$arguments = $this->shredArguments($this->current+1);
+		$arguments = $this->shredArguments2($this->current+1);
 
 		if ($this->state == self::CLASS_SCOPE) {
 			$this->reader->onMethod($name, $arguments, $this->keywords);
@@ -475,7 +478,7 @@ class CodeParser {
 		$token = $this->currentToken();
 		$arguments = array();
 		$hint = false;
-
+		
 		while ($token[0] != T_BRACE_CLOSE) {
 			if ($token[0] == T_STRING) {
 				$hint = $token[1];
@@ -488,6 +491,83 @@ class CodeParser {
 		}
 
 		return $arguments;
+	}
+	
+	function shredArguments2() {
+		
+		$arguments = array();
+		$token = $this->currentToken();
+		
+		while($token[0] != T_BRACE_CLOSE) {		
+			if($token[0] == T_STRING 
+					|| $token[0] == T_VARIABLE 
+					|| $token[0] == T_AMPERSAND) {
+				$argument = $this->shredArgument();
+				if (!is_null($argument)) {
+					$arguments[] = $argument;
+				}
+			} else {
+				$this->nextToken();
+			}
+			$token = $this->currentToken();
+		}
+		
+		return $arguments;
+		
+	}
+	
+	function shredArgument() {
+		$token = $this->currentToken();
+		
+		$hint = null;
+		$name = null;
+		$default = null;
+		$isReference = false;
+		
+
+		
+		while ($token[0] != T_BRACE_CLOSE && $token[0] != T_COMMA) {
+			if ($token[0] == T_AMPERSAND) {
+				$isReference = true;
+			} elseif ($token[0] == T_STRING) {
+				$hint = $token[1];
+			} elseif ($token[0] == T_EQUAL) {
+				$default = $this->shredValue(array(T_COMMA, T_BRACE_CLOSE));
+				$token = $this->currentToken();
+				continue;
+			} elseif ($token[0] == T_VARIABLE) {
+				$name = (string)$token[1];
+			}
+			$token = $this->nextToken();
+		}
+		if ($name == null) {
+			return null;
+		}
+		return new ArgumentModel($name, $hint, $default, $isReference);
+		
+	}
+	
+	function shredConstantExpr() {
+		$token = $this->nextToken();
+		$nestingLevel = 0;
+		$default = '';
+		while (($token[0] != T_BRACE_CLOSE || $nestingLevel > 0)
+				&& $token[0] != T_COMMA) {	
+			if ($token[0] == T_BRACE_OPEN) {
+				$nestingLevel++;
+			} elseif ($token[0] == T_BRACE_CLOSE) {
+				$nestingLevel--;
+			}
+			
+			if ($token[0] == T_ARRAY) {
+				$r = $this->readArray();
+			}
+			
+			$default .= (string)$token[1];
+			$token = $this->nextToken();
+		}
+		
+		return trim($default);
 	}
 
 	/**
