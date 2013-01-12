@@ -18,27 +18,27 @@
 class ArgumentModel extends CodeModel {
 
 	private $name;
-	private $hint;
 	private $default;
+	private $hint;
 	private $isReference;
 	
-	function __construct($name, $hint = null, $default = null, $isReference = false, $a = array(array(1))) {
+	function __construct($name, $default = null, $hint = null, $isReference = false) {
 		$this->name = $name;
-		$this->hint = $hint;
 		$this->default = $default;
+		$this->hint = $hint;
 		$this->isReference = $isReference;
 	}
 
 	public function getName() {
 		return $this->name;
 	}
-	
-	public function getHint() {
-		return $this->hint;
-	}
 
 	public function getDefault() {
 		return $this->default;
+	}
+
+	public function getHint() {
+		return $this->hint;
 	}
 
 	public function isReference() {
@@ -61,8 +61,9 @@ class ArgumentModel extends CodeModel {
 		if ($this->hasDefault()) {
 			$declaration .= ' = ';
 			$default = $this->getDefault();
-			$e = '';
-			if (is_array($default)) {
+			if (is_bool($default)) {
+				$default = $default ? 'true' : 'false';
+			} elseif (is_array($default)) {
 				$default = var_export($default, true);
 				$default = preg_replace('/,?\v/', '', $default);
 				$default = preg_replace('/array\s*\(\s*/', 'array(', $default);

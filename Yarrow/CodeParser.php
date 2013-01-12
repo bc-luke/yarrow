@@ -520,7 +520,7 @@ class CodeParser {
 		if ($name == null) {
 			return null;
 		}
-		return new ArgumentModel($name, $hint, $default, $isReference);
+		return new ArgumentModel($name, $default, $hint, $isReference);
 		
 	}
 	

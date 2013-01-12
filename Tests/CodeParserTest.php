@@ -147,7 +147,7 @@ class CodeParserTest extends PHPUnit_Framework_TestCase {
 									  ->with('FinalStatic', ClassModel::BASE_TYPE, array('final' => true));
 
 		$reader->expects($this->at(1))->method('onMethod')
-									  ->with('hello', array(new ArgumentModel('$a', null, 'world')), array('static' => true, 'visibility' => 'public'));
+									  ->with('hello', array(new ArgumentModel('$a', 'world')), array('static' => true, 'visibility' => 'public'));
 
 
 		$parser = new CodeParser($tokens, $reader);
@@ -236,6 +236,17 @@ class CodeParserTest extends PHPUnit_Framework_TestCase {
 		$reader->expects($this->once())->method('onFunction')->with('multiplier', array(new ArgumentModel('$arg')));
 		$reader->expects($this->once())->method('onMethod')->with('getMultiplier', array(new ArgumentModel('$arg')));
 		
+		$parser = new CodeParser($tokens, $reader);
+		$parser->parse();
+	}
+
+	function testCanParseDefaultFunctionArguments() {
+		$file = 'Corpus/defaults.php';
+		$tokens = $this->tokenizeSampleFile($file);
+		$reader = $this->getMockReader($file);
+
+		$reader->expects($this->once())->method('onFunction')->with('hello', array(new ArgumentModel('$arg', 'world')));
+
 		$parser = new CodeParser($tokens, $reader);
 		$parser->parse();
 	}
